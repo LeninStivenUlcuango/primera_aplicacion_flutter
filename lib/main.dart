@@ -71,7 +71,7 @@ class MyHomePage extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ElevatedButton.icon(
+                ElevatedButton.icon(// se usa como el boton para poner un icono
                   onPressed: () {
                     appState.toggleFavorites();
                   },
