@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         title: 'Namer App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
         ),
         home: MyHomePage(),
       ),
@@ -43,17 +43,22 @@ class MyHomePage extends StatelessWidget {
     var pair = appState.current;
 
     return Scaffold(// cada build debe mostrar por lo menos un widget
-      body: Column(
-        children: [
-          Text('Una idea random:'),
-          BigCard(pair: pair),
-          ElevatedButton(
-            onPressed: () {
-              appState.getNext();
-            },
-            child: Text('Next'),
-          ),
-        ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // alinear al centro 
+          children: [
+            Text('Una idea random:'),
+            SizedBox(height: 10,), // se usa para crear espacios visuales
+            BigCard(pair: pair),
+            SizedBox(height: 10,),
+            ElevatedButton(
+              onPressed: () {
+                appState.getNext();
+              },
+              child: Text('Next'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -69,6 +74,22 @@ class BigCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(pair.asLowerCase);
+    final theme = Theme.of(context); //solicita el tema actual de la app
+    // txtTheme se accede al tema de la fuente de la app, se podia usar bodyMedium para el texto medio esatndar
+    // estilo de texto grande para la visualizacion(texto importante)
+    // ! decir a dart que se lo qeu hago
+    //copiWit una copia del estilo del texto
+    // onPrimari es una buena opccion para usar en primary 
+    final style = theme.textTheme.displayMedium!.copyWith(
+      color: theme.colorScheme.onPrimary,
+    );
+    return Card(
+      color: theme.colorScheme.primary, // color sqeuma toma el color, en este hay la propiedad primary
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Text(pair.asLowerCase, style: style, 
+        semanticsLabel: "${pair.first} ${pair.second}",), //para que las personas qeu no puedan leer
+      ),
+    );
   }
 }
