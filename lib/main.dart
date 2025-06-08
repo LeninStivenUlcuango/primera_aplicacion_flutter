@@ -1,7 +1,11 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+// StatelessWidget es recomendable usar para una misma pantalla o componente ya que su estado se manejaria internamente 
+// StatefulWidget es recomendado para no alamcenar muschas variables en nuestro manejador de estado, ya que tiene su propio estado
+// --responsive
+// hay algunas cosas qeu la hacen responsive como -wrap es como column o row qeu une automaticsmnete
+// - Fittedbox incluye elemetno secundario en el espacio sobrante segun la configuracion
 void main() {
   runApp(MyApp());
 }
@@ -35,59 +39,117 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();// notifica a todo el qeu este mirando
   }
 
-  var favoritos = <WordPair>[];
+  var favorites = <WordPair>[];
 
-  void toggleFavorites(){
-    if(favoritos.contains(current)){
-      favoritos.remove(current);
+  void toggleFavorite(){
+    if(favorites.contains(current)){
+      favorites.remove(current);
     }else{
-      favoritos.add(current);
+      favorites.add(current);
     }
     notifyListeners();
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) { // build se llama automaticamente cada qeu cambia algo
-    var appState = context.watch<MyAppState>(); // mediante el metodo wathc se mira el estado de la app
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {// el guion bajo(_) hace que sea privado
+  // aqui ponemos los estados
+  var selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    // variables dentro del widget
+    Widget page;
+    switch (selectedIndex) {
+      case 0:
+        page = GeneratorPage();
+        break;
+      case 1:
+        page = Placeholder(); // un widget util que usa un rectngulo tachado indica que no esta terminado
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+    return Scaffold(
+      body: Row(
+        children: [
+          SafeArea( // ayuda a que los elemetos no se muestren oscurecidos
+            child: NavigationRail( // tambien evita que se vean obscuresidos por una barra de estado
+              extended: false, // al cambiar a true muestra la setiqeutas junto a los titulos( se extiende )
+              destinations: [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home),
+                  label: Text('Home'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.favorite),
+                  label: Text('Favorites'),
+                ),
+              ],
+              selectedIndex: selectedIndex, // indica cual parte del menu esta seleccionado
+              onDestinationSelected: (value) { //metodo qeu se usa segun la seleccion
+                // similar a notifyListeners
+                setState(() {
+                  selectedIndex = value;
+                });
+              },
+            ),
+          ),
+          Expanded( // nos ayudan a ocupar le espacio restante
+            child: Container(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              child: page,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class GeneratorPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
     var pair = appState.current;
+
     IconData icon;
-    if(appState.favoritos.contains(pair)){
+    if (appState.favorites.contains(pair)) {
       icon = Icons.favorite;
-    }else{
+    } else {
       icon = Icons.favorite_border;
     }
 
-    return Scaffold(// cada build debe mostrar por lo menos un widget
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // alinear al centro 
-          children: [
-            Text('Una idea random:'),
-            SizedBox(height: 10,), // se usa para crear espacios visuales
-            BigCard(pair: pair),
-            SizedBox(height: 10,),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ElevatedButton.icon(// se usa como el boton para poner un icono
-                  onPressed: () {
-                    appState.toggleFavorites();
-                  },
-                  icon: Icon(icon),
-                  label: Text('Like'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    appState.getNext();
-                  },
-                  child: Text('Next'),
-                ),
-              ],
-            ),
-          ],
-        ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          BigCard(pair: pair),
+          SizedBox(height: 10),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  appState.toggleFavorite();
+                },
+                icon: Icon(icon),
+                label: Text('Like'),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  appState.getNext();
+                },
+                child: Text('Next'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
