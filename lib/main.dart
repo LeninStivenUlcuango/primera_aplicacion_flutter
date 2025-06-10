@@ -69,45 +69,86 @@ class _MyHomePageState extends State<MyHomePage> {// el guion bajo(_) hace que s
         page = GeneratorPage();
         break;
       case 1:
-        page = Placeholder(); // un widget util que usa un rectngulo tachado indica que no esta terminado
+        page = ListLikes(); // un widget util que usa un rectngulo tachado indica que no esta terminado
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
-    return Scaffold(
-      body: Row(
-        children: [
-          SafeArea( // ayuda a que los elemetos no se muestren oscurecidos
-            child: NavigationRail( // tambien evita que se vean obscuresidos por una barra de estado
-              extended: false, // al cambiar a true muestra la setiqeutas junto a los titulos( se extiende )
-              destinations: [
-                NavigationRailDestination(
-                  icon: Icon(Icons.home),
-                  label: Text('Home'),
+    return LayoutBuilder(// se llama cada vez que als restricciones cambian(ejm el susuario cambia el tamaño de la app)
+      builder: (context, constraints) {
+        return Scaffold(
+          body: Row(
+            children: [
+              SafeArea( // ayuda a que los elemetos no se muestren oscurecidos
+                child: NavigationRail( // tambien evita que se vean obscuresidos por una barra de estado
+                  extended: constraints.maxWidth >= 600, // al cambiar a true muestra la setiqeutas junto a los titulos( se extiende )
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text('Favorites'),
+                    ),
+                  ],
+                  selectedIndex: selectedIndex, // indica cual parte del menu esta seleccionado
+                  onDestinationSelected: (value) { //metodo qeu se usa segun la seleccion
+                    // similar a notifyListeners
+                    setState(() {
+                      selectedIndex = value;
+                    });
+                  },
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.favorite),
-                  label: Text('Favorites'),
+              ),
+              Expanded( // nos ayudan a ocupar le espacio restante
+                child: Container(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: page,
                 ),
-              ],
-              selectedIndex: selectedIndex, // indica cual parte del menu esta seleccionado
-              onDestinationSelected: (value) { //metodo qeu se usa segun la seleccion
-                // similar a notifyListeners
-                setState(() {
-                  selectedIndex = value;
-                });
-              },
-            ),
+              ),
+            ],
           ),
-          Expanded( // nos ayudan a ocupar le espacio restante
-            child: Container(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: page,
-            ),
-          ),
-        ],
+        );
+      }
+    );
+  }
+}
+
+class ListLikes extends StatelessWidget {
+  const ListLikes({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    final favorites = appState.favorites;
+    return ListView.builder(
+      itemCount: appState.favorites.length,
+  itemBuilder: (context, index) {
+    final pair = appState.favorites[index];
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: const Icon(Icons.favorite),
+        title: Text(
+          pair.asPascalCase,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.grey),
+          onPressed: () {
+            // Elimina el favorito si tienes lógica para eso
+            // appState.removeFavorite(pair);
+          },
+        ),
       ),
     );
+  },
+      );
   }
 }
 
